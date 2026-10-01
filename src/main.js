@@ -5,6 +5,39 @@ const formulario = document.querySelector("#form-busqueda");
 const campoCiudad = document.querySelector("#campo-ciudad");
 const mensaje = document.querySelector("#mensaje");
 const listaCoincidencias = document.querySelector("#coincidencias");
+const seccionActual = document.querySelector("#actual");
+
+// Traducción de los códigos del tiempo (estándar WMO) a texto
+const estadosCielo = {
+  0: "Despejado",
+  1: "Mayormente despejado",
+  2: "Parcialmente nublado",
+  3: "Cubierto",
+  45: "Niebla",
+  48: "Niebla con escarcha",
+  51: "Llovizna débil",
+  53: "Llovizna",
+  55: "Llovizna intensa",
+  56: "Llovizna helada",
+  57: "Llovizna helada intensa",
+  61: "Lluvia débil",
+  63: "Lluvia",
+  65: "Lluvia fuerte",
+  66: "Lluvia helada",
+  67: "Lluvia helada fuerte",
+  71: "Nieve débil",
+  73: "Nieve",
+  75: "Nieve fuerte",
+  77: "Nieve granulada",
+  80: "Chubascos débiles",
+  81: "Chubascos",
+  82: "Chubascos fuertes",
+  85: "Chubascos de nieve",
+  86: "Chubascos de nieve fuertes",
+  95: "Tormenta",
+  96: "Tormenta con granizo",
+  99: "Tormenta con granizo fuerte",
+};
 
 // Busca ciudades por nombre en el geocoding de Open-Meteo
 async function buscarCiudades(texto) {
@@ -24,10 +57,52 @@ async function buscarCiudades(texto) {
   return datos.results;
 }
 
+// Pide a Open-Meteo el tiempo actual y de 7 días de una ciudad
+async function obtenerTiempo(ciudad) {
+  const datosActuales = [
+    "temperature_2m",
+    "apparent_temperature",
+    "weather_code",
+    "wind_speed_10m",
+    "relative_humidity_2m",
+  ];
+  const datosDiarios = [
+    "weather_code",
+    "temperature_2m_max",
+    "temperature_2m_min",
+    "precipitation_probability_max",
+    "wind_speed_10m_max",
+    "uv_index_max",
+    "sunrise",
+    "sunset",
+  ];
+
+  const parametros = new URLSearchParams({
+    latitude: ciudad.latitude,
+    longitude: ciudad.longitude,
+    timezone: "auto",
+    forecast_days: 7,
+    current: datosActuales.join(","),
+    daily: datosDiarios.join(","),
+  });
+  const url = "https://api.open-meteo.com/v1/forecast?" + parametros;
+
+  const respuesta = await fetch(url);
+  if (!respuesta.ok) {
+    return null;
+  }
+  return await respuesta.json();
+}
+
 // Texto de cada opción: "Valencia, Comunidad Valenciana, España"
 function textoCiudad(ciudad) {
   const partes = [ciudad.name, ciudad.admin1, ciudad.country];
   return partes.filter(Boolean).join(", ");
+}
+
+// Escribe un texto dentro del elemento con ese id
+function escribir(id, texto) {
+  document.querySelector(id).textContent = texto;
 }
 
 // Pinta la lista de coincidencias como botones
@@ -48,10 +123,36 @@ function mostrarCoincidencias(ciudades) {
   }
 }
 
+// Rellena la sección del tiempo actual y la muestra
+function mostrarTiempoActual(ciudad, tiempo) {
+  const actual = tiempo.current;
+  const temperatura = Math.round(actual.temperature_2m);
+  const sensacion = Math.round(actual.apparent_temperature);
+
+  escribir("#actual-ciudad", textoCiudad(ciudad));
+  escribir("#actual-cielo", estadosCielo[actual.weather_code] || "Sin datos");
+  escribir("#actual-temperatura", temperatura + " °C");
+  escribir("#actual-sensacion", "Sensación " + sensacion + " °C");
+  escribir("#actual-viento", actual.wind_speed_10m + " km/h");
+  escribir("#actual-humedad", actual.relative_humidity_2m + " %");
+
+  seccionActual.hidden = false;
+}
+
 // Qué pasa al elegir una ciudad de la lista
-function elegirCiudad(ciudad) {
+async function elegirCiudad(ciudad) {
   listaCoincidencias.innerHTML = "";
-  console.log("Ciudad elegida:", ciudad);
+  mensaje.textContent = "Estamos buscando tu tiempo";
+
+  const tiempo = await obtenerTiempo(ciudad);
+  if (tiempo === null) {
+    mensaje.textContent = "No se pudo obtener el tiempo. Inténtalo de nuevo.";
+    return;
+  }
+
+  mensaje.textContent = "";
+  mostrarTiempoActual(ciudad, tiempo);
+  console.log("Previsión diaria:", tiempo.daily);
 }
 
 // Qué pasa cuando el usuario pulsa "Buscar" (o Enter)
@@ -60,6 +161,7 @@ formulario.addEventListener("submit", async function (evento) {
 
   const texto = campoCiudad.value.trim();
   listaCoincidencias.innerHTML = "";
+  seccionActual.hidden = true;
   mensaje.textContent = "Estamos buscando tu tiempo";
 
   const ciudades = await buscarCiudades(texto);
