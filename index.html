@@ -1,13 +1,75 @@
 <!doctype html>
-<html lang="en">
+<html lang="es">
   <head>
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>app-tiempo</title>
+    <meta
+      name="description"
+      content="Consulta el tiempo actual y la previsión de 7 días de cualquier ciudad."
+    />
+    <title>Tu app del tiempo</title>
   </head>
   <body>
-    <div id="app"></div>
+    <header>
+      <h1>Tu app del tiempo</h1>
+    </header>
+
+    <main>
+      <section id="buscador">
+        <form id="form-busqueda">
+          <label for="campo-ciudad">Busca tu ciudad</label>
+          <input
+            type="text"
+            id="campo-ciudad"
+            name="ciudad"
+            placeholder="Ej.: Sevilla"
+            required
+          />
+          <button type="submit">Buscar</button>
+        </form>
+
+        <p id="mensaje" aria-live="polite"></p>
+
+        <ul id="coincidencias"></ul>
+      </section>
+
+      <section id="actual" hidden>
+        <h2 id="actual-ciudad"></h2>
+        <p id="actual-cielo"></p>
+        <p>
+          <span id="actual-temperatura"></span>
+          <span id="actual-sensacion"></span>
+        </p>
+        <ul>
+          <li>Viento: <span id="actual-viento"></span></li>
+          <li>Humedad: <span id="actual-humedad"></span></li>
+        </ul>
+      </section>
+
+      <section id="prevision" hidden>
+        <h2>Próximos 7 días</h2>
+        <div id="botones-extra">
+          <button type="button" data-fila="viento" aria-pressed="false">
+            Viento
+          </button>
+          <button type="button" data-fila="uv" aria-pressed="false">UV</button>
+          <button type="button" data-fila="sol" aria-pressed="false">
+            Sol
+          </button>
+          <button type="button" data-fila="luna" aria-pressed="false">
+            Luna
+          </button>
+        </div>
+        <table id="tabla-prevision">
+          <thead>
+            <tr id="fila-dias"></tr>
+          </thead>
+          <tbody id="cuerpo-prevision"></tbody>
+        </table>
+      </section>
+    </main>
+
     <script type="module" src="/src/main.js"></script>
   </body>
 </html>
