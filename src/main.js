@@ -78,6 +78,7 @@ async function obtenerTiempo(ciudad) {
     "uv_index_max",
     "sunrise",
     "sunset",
+    "moon_phase",
   ];
 
   const parametros = new URLSearchParams({
@@ -161,6 +162,29 @@ function crearCelda(etiqueta, texto) {
   celda.textContent = texto;
   return celda;
 }
+// Fase lunar: la API da una fracción de 0 a 1 (0 = nueva, 0,5 = llena)
+const fasesLuna = [
+  "🌑 Luna nueva",
+  "🌒 Creciente",
+  "🌓 Cuarto creciente",
+  "🌔 Gibosa creciente",
+  "🌕 Luna llena",
+  "🌖 Gibosa menguante",
+  "🌗 Cuarto menguante",
+  "🌘 Menguante",
+];
+
+function faseLunar(fraccion) {
+  const posicion = Math.round(fraccion * 8) % 8;
+  return fasesLuna[posicion];
+}
+
+// ¿Está activado el botón de esta fila opcional?
+function botonActivo(nombreFila) {
+  const selector = '#botones-extra [data-fila="' + nombreFila + '"]';
+  const boton = document.querySelector(selector);
+  return boton.getAttribute("aria-pressed") === "true";
+}
 
 // Crea una fila de la tabla: título a la izquierda y un valor por día
 function crearFila(titulo, valores, nombreFila) {
@@ -173,10 +197,10 @@ function crearFila(titulo, valores, nombreFila) {
     fila.append(crearCelda("td", valor));
   }
 
-  // Las filas con nombre son las opcionales: empiezan ocultas
+  // Las filas con nombre son las opcionales: se ven si su botón está activo
   if (nombreFila) {
     fila.dataset.fila = nombreFila;
-    fila.hidden = true;
+    fila.hidden = !botonActivo(nombreFila);
   }
   return fila;
 }
@@ -206,6 +230,7 @@ function mostrarPrevision(diario) {
   const sol = diario.sunrise.map(
     (amanecer, i) => hora(amanecer) + " / " + hora(diario.sunset[i]),
   );
+  const luna = diario.moon_phase.map(faseLunar);
 
   cuerpoPrevision.append(
     crearFila("Cielo", cielo),
@@ -215,6 +240,7 @@ function mostrarPrevision(diario) {
     crearFila("Viento máx.", viento, "viento"),
     crearFila("Índice UV", uv, "uv"),
     crearFila("Amanecer / atardecer", sol, "sol"),
+    crearFila("Luna", luna, "luna"),
   );
 
   seccionPrevision.hidden = false;
@@ -234,6 +260,21 @@ async function elegirCiudad(ciudad) {
   mensaje.textContent = "";
   mostrarTiempoActual(ciudad, tiempo);
   mostrarPrevision(tiempo.daily);
+}
+// Botones de filas opcionales: cada clic muestra u oculta su fila
+const botonesExtra = document.querySelectorAll("#botones-extra button");
+
+for (const boton of botonesExtra) {
+  boton.addEventListener("click", function () {
+    const activo = boton.getAttribute("aria-pressed") === "true";
+    boton.setAttribute("aria-pressed", String(!activo));
+
+    const selector = '[data-fila="' + boton.dataset.fila + '"]';
+    const fila = cuerpoPrevision.querySelector(selector);
+    if (fila) {
+      fila.hidden = activo;
+    }
+  });
 }
 
 // Qué pasa cuando el usuario pulsa "Buscar" (o Enter)
