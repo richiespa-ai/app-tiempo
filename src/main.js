@@ -6,6 +6,9 @@ const campoCiudad = document.querySelector("#campo-ciudad");
 const mensaje = document.querySelector("#mensaje");
 const listaCoincidencias = document.querySelector("#coincidencias");
 const seccionActual = document.querySelector("#actual");
+const seccionPrevision = document.querySelector("#prevision");
+const filaDias = document.querySelector("#fila-dias");
+const cuerpoPrevision = document.querySelector("#cuerpo-prevision");
 
 // Traducción de los códigos del tiempo (estándar WMO) a texto
 const estadosCielo = {
@@ -138,6 +141,84 @@ function mostrarTiempoActual(ciudad, tiempo) {
 
   seccionActual.hidden = false;
 }
+// Nombre corto del día: "Hoy", "vie 2", "sáb 3"...
+function nombreDia(fecha, posicion) {
+  if (posicion === 0) {
+    return "Hoy";
+  }
+  const dia = new Date(fecha + "T00:00");
+  return dia.toLocaleDateString("es-ES", { weekday: "short", day: "numeric" });
+}
+
+// Hora de un texto como "2026-10-01T07:58" → "07:58"
+function hora(fechaHora) {
+  return fechaHora.slice(11, 16);
+}
+
+// Crea una celda de la tabla (th o td) con su texto
+function crearCelda(etiqueta, texto) {
+  const celda = document.createElement(etiqueta);
+  celda.textContent = texto;
+  return celda;
+}
+
+// Crea una fila de la tabla: título a la izquierda y un valor por día
+function crearFila(titulo, valores, nombreFila) {
+  const fila = document.createElement("tr");
+  const cabecera = crearCelda("th", titulo);
+  cabecera.scope = "row";
+  fila.append(cabecera);
+
+  for (const valor of valores) {
+    fila.append(crearCelda("td", valor));
+  }
+
+  // Las filas con nombre son las opcionales: empiezan ocultas
+  if (nombreFila) {
+    fila.dataset.fila = nombreFila;
+    fila.hidden = true;
+  }
+  return fila;
+}
+
+// Rellena la tabla de los próximos 7 días y la muestra
+function mostrarPrevision(diario) {
+  filaDias.innerHTML = "";
+  cuerpoPrevision.innerHTML = "";
+
+  // Fila de cabecera: una celda vacía y luego un día por columna
+  filaDias.append(crearCelda("th", ""));
+  diario.time.forEach(function (fecha, posicion) {
+    const celda = crearCelda("th", nombreDia(fecha, posicion));
+    celda.scope = "col";
+    filaDias.append(celda);
+  });
+
+  // Convertimos cada lista de datos en una lista de textos
+  const cielo = diario.weather_code.map(
+    (codigo) => estadosCielo[codigo] || "—",
+  );
+  const maximas = diario.temperature_2m_max.map((t) => Math.round(t) + " °C");
+  const minimas = diario.temperature_2m_min.map((t) => Math.round(t) + " °C");
+  const lluvia = diario.precipitation_probability_max.map((p) => p + " %");
+  const viento = diario.wind_speed_10m_max.map((v) => v + " km/h");
+  const uv = diario.uv_index_max.map((u) => String(u));
+  const sol = diario.sunrise.map(
+    (amanecer, i) => hora(amanecer) + " / " + hora(diario.sunset[i]),
+  );
+
+  cuerpoPrevision.append(
+    crearFila("Cielo", cielo),
+    crearFila("Máxima", maximas),
+    crearFila("Mínima", minimas),
+    crearFila("Prob. lluvia", lluvia),
+    crearFila("Viento máx.", viento, "viento"),
+    crearFila("Índice UV", uv, "uv"),
+    crearFila("Amanecer / atardecer", sol, "sol"),
+  );
+
+  seccionPrevision.hidden = false;
+}
 
 // Qué pasa al elegir una ciudad de la lista
 async function elegirCiudad(ciudad) {
@@ -152,7 +233,7 @@ async function elegirCiudad(ciudad) {
 
   mensaje.textContent = "";
   mostrarTiempoActual(ciudad, tiempo);
-  console.log("Previsión diaria:", tiempo.daily);
+  mostrarPrevision(tiempo.daily);
 }
 
 // Qué pasa cuando el usuario pulsa "Buscar" (o Enter)
@@ -162,6 +243,7 @@ formulario.addEventListener("submit", async function (evento) {
   const texto = campoCiudad.value.trim();
   listaCoincidencias.innerHTML = "";
   seccionActual.hidden = true;
+  seccionPrevision.hidden = true;
   mensaje.textContent = "Estamos buscando tu tiempo";
 
   const ciudades = await buscarCiudades(texto);
