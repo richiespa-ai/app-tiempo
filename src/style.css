@@ -1,28 +1,54 @@
-/* ===== 1. Colores (modo claro) ===== */
+/* ===== 1. Colores =====
+   light-dark(claro, oscuro) elige el color según el modo del dispositivo */
 :root {
   color-scheme: light dark;
-  --cielo-alto: #cfe3f5;
-  --cielo-bajo: #f4f8fc;
-  --tinta: #14263a;
-  --tinta-suave: #3b4b5d;
-  --superficie: rgba(255, 255, 255, 0.7);
-  --linea: rgba(20, 38, 58, 0.16);
-  --acento: #0b5cad;
-  --sobre-acento: #ffffff;
+  --cielo-alto: light-dark(#cfe3f5, #0b1728);
+  --cielo-bajo: light-dark(#f4f8fc, #1b2d47);
+  --tinta: light-dark(#14263a, #eef4fb);
+  --tinta-suave: light-dark(#3b4b5d, #b7c6d8);
+  --superficie: light-dark(rgba(255, 255, 255, 0.7), rgba(255, 255, 255, 0.07));
+  --linea: light-dark(rgba(20, 38, 58, 0.16), rgba(238, 244, 251, 0.2));
+  --acento: light-dark(#0b5cad, #8cc4ff);
+  --sobre-acento: light-dark(#ffffff, #0b1728);
+  --nube: light-dark(#ffffff, #8394aa);
+  --gota: light-dark(rgba(40, 70, 105, 0.38), rgba(200, 220, 245, 0.35));
+  --copo: light-dark(rgba(255, 255, 255, 0.95), rgba(235, 242, 250, 0.8));
 }
 
-/* ===== 2. Colores (modo oscuro) ===== */
-@media (prefers-color-scheme: dark) {
-  :root {
-    --cielo-alto: #0b1728;
-    --cielo-bajo: #1b2d47;
-    --tinta: #eef4fb;
-    --tinta-suave: #b7c6d8;
-    --superficie: rgba(255, 255, 255, 0.07);
-    --linea: rgba(238, 244, 251, 0.2);
-    --acento: #8cc4ff;
-    --sobre-acento: #0b1728;
-  }
+/* De noche en la ciudad elegida: modo oscuro siempre */
+:root[data-momento="noche"] {
+  color-scheme: dark;
+}
+
+/* ===== 2. Color del cielo según el tiempo ===== */
+:root[data-cielo="despejado"] {
+  --cielo-alto: light-dark(#9fd0ff, #0a2a52);
+  --cielo-bajo: light-dark(#eaf5ff, #1d4a80);
+}
+
+:root[data-cielo="nubes"] {
+  --cielo-alto: light-dark(#c9d3de, #1a2230);
+  --cielo-bajo: light-dark(#f1f4f7, #2c3646);
+}
+
+:root[data-cielo="niebla"] {
+  --cielo-alto: light-dark(#d8dcdf, #22262b);
+  --cielo-bajo: light-dark(#f5f5f3, #383d43);
+}
+
+:root[data-cielo="lluvia"] {
+  --cielo-alto: light-dark(#b3c5d8, #0f1c2b);
+  --cielo-bajo: light-dark(#e6edf4, #25384d);
+}
+
+:root[data-cielo="nieve"] {
+  --cielo-alto: light-dark(#dfeaf2, #1c2a38);
+  --cielo-bajo: light-dark(#fbfdff, #3a4b5c);
+}
+
+:root[data-cielo="tormenta"] {
+  --cielo-alto: light-dark(#bcc0d2, #14121f);
+  --cielo-bajo: light-dark(#e9e9f1, #2b2740);
 }
 
 /* ===== 3. Base ===== */
@@ -46,7 +72,6 @@ body {
   font-size: 1.0625rem;
   line-height: 1.5;
   color: var(--tinta);
-  background: linear-gradient(var(--cielo-alto), var(--cielo-bajo) 40rem);
 }
 
 header,
@@ -308,66 +333,217 @@ dd {
   }
 }
 
-/* ===== 8. Color del cielo según el tiempo (modo claro) ===== */
-:root[data-cielo="despejado"] {
-  --cielo-alto: #9fd0ff;
-  --cielo-bajo: #eaf5ff;
+/* ===== 8. El cielo animado (detrás de todo el contenido) ===== */
+.cielo {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  overflow: hidden;
+  pointer-events: none;
+  background: linear-gradient(var(--cielo-alto), var(--cielo-bajo));
 }
 
-:root[data-cielo="nubes"] {
-  --cielo-alto: #c9d3de;
-  --cielo-bajo: #f1f4f7;
+/* Todas las piezas empiezan ocultas; cada tipo de cielo enciende las suyas */
+.cielo > * {
+  position: absolute;
+  opacity: 0;
+  transition: opacity 1s;
 }
 
-:root[data-cielo="niebla"] {
-  --cielo-alto: #d8dcdf;
-  --cielo-bajo: #f5f5f3;
+/* --- Sol y luna --- */
+.astro {
+  top: 6vmin;
+  right: 8vmin;
+  width: 34vmin;
+  height: 34vmin;
+  border-radius: 50%;
+  background: radial-gradient(
+    circle,
+    rgba(255, 221, 120, 0.95) 0 22%,
+    rgba(255, 221, 120, 0.35) 40%,
+    rgba(255, 221, 120, 0) 70%
+  );
+  animation: latir 9s ease-in-out infinite alternate;
 }
 
-:root[data-cielo="lluvia"] {
-  --cielo-alto: #b3c5d8;
-  --cielo-bajo: #e6edf4;
+:root[data-momento="noche"] .astro {
+  top: 10vmin;
+  right: 12vmin;
+  width: 13vmin;
+  height: 13vmin;
+  background: #f3efdf;
+  box-shadow: 0 0 9vmin 2vmin rgba(243, 239, 223, 0.25);
+  animation: none;
 }
 
-:root[data-cielo="nieve"] {
-  --cielo-alto: #dfeaf2;
-  --cielo-bajo: #fbfdff;
+/* --- Estrellas --- */
+.estrellas {
+  inset: 0;
+  background-image:
+    radial-gradient(circle, #fff 0 1px, transparent 1.5px),
+    radial-gradient(circle, #fff 0 1px, transparent 1.5px),
+    radial-gradient(circle, #fff 0 1.5px, transparent 2px);
+  background-size:
+    170px 190px,
+    230px 150px,
+    310px 270px;
+  background-position:
+    20px 30px,
+    120px 90px,
+    60px 160px;
+  animation: titilar 5s ease-in-out infinite alternate;
 }
 
-:root[data-cielo="tormenta"] {
-  --cielo-alto: #bcc0d2;
-  --cielo-bajo: #e9e9f1;
+/* --- Nubes --- */
+.nube {
+  left: 0;
+  width: 60vmin;
+  height: 18vmin;
+  border-radius: 50%;
+  background: var(--nube);
+  filter: blur(14px);
+  animation: derivar 90s linear infinite;
 }
 
-/* ===== 9. Color del cielo según el tiempo (modo oscuro) ===== */
-@media (prefers-color-scheme: dark) {
-  :root[data-cielo="despejado"] {
-    --cielo-alto: #0a2a52;
-    --cielo-bajo: #1d4a80;
+.nube-1 {
+  top: 8%;
+}
+
+.nube-2 {
+  top: 24%;
+  width: 80vmin;
+  height: 22vmin;
+  animation-duration: 130s;
+  animation-delay: -60s;
+}
+
+.nube-3 {
+  top: 44%;
+  width: 50vmin;
+  animation-duration: 110s;
+  animation-delay: -25s;
+}
+
+/* --- Lluvia y nieve: un patrón que se repite y cae --- */
+.precipitacion {
+  inset: -450px -20% 0 -20%;
+}
+
+:root[data-cielo="lluvia"] .precipitacion,
+:root[data-cielo="tormenta"] .precipitacion {
+  background-image:
+    radial-gradient(ellipse 1px 13px, var(--gota) 0 95%, transparent),
+    radial-gradient(ellipse 1px 9px, var(--gota) 0 95%, transparent);
+  background-size:
+    47px 90px,
+    71px 150px;
+  rotate: 8deg;
+  animation: caer 1.3s linear infinite;
+}
+
+:root[data-cielo="nieve"] .precipitacion {
+  background-image:
+    radial-gradient(circle, var(--copo) 0 2px, transparent 3px),
+    radial-gradient(circle, var(--copo) 0 3px, transparent 4px);
+  background-size:
+    61px 90px,
+    103px 150px;
+  animation: caer 11s linear infinite;
+}
+
+/* --- Qué piezas se ven en cada tipo de cielo --- */
+:root[data-cielo="despejado"] .astro {
+  opacity: 1;
+}
+
+:root[data-cielo="nubes"] .astro {
+  opacity: 0.5;
+}
+
+:root[data-cielo="despejado"][data-momento="noche"] .estrellas {
+  opacity: 0.9;
+}
+
+:root[data-cielo="nubes"][data-momento="noche"] .estrellas {
+  opacity: 0.4;
+}
+
+:root[data-cielo="nubes"] .nube,
+:root[data-cielo="lluvia"] .nube,
+:root[data-cielo="nieve"] .nube,
+:root[data-cielo="tormenta"] .nube {
+  opacity: 0.55;
+}
+
+/* Niebla: las nubes se hacen enormes y difusas */
+:root[data-cielo="niebla"] .nube {
+  width: 140vmax;
+  height: 30vmin;
+  filter: blur(40px);
+  opacity: 0.6;
+}
+
+:root[data-cielo="lluvia"] .precipitacion,
+:root[data-cielo="nieve"] .precipitacion,
+:root[data-cielo="tormenta"] .precipitacion {
+  opacity: 1;
+}
+
+/* Tormenta: un destello suave de vez en cuando */
+:root[data-cielo="tormenta"] .relampago {
+  inset: 0;
+  background: #fff;
+  animation: destello 11s linear infinite;
+}
+
+/* --- Los movimientos --- */
+@keyframes latir {
+  to {
+    scale: 1.08;
   }
+}
 
-  :root[data-cielo="nubes"] {
-    --cielo-alto: #1a2230;
-    --cielo-bajo: #2c3646;
+@keyframes titilar {
+  to {
+    filter: brightness(0.6);
   }
+}
 
-  :root[data-cielo="niebla"] {
-    --cielo-alto: #22262b;
-    --cielo-bajo: #383d43;
+@keyframes derivar {
+  from {
+    translate: -70vmin 0;
   }
-
-  :root[data-cielo="lluvia"] {
-    --cielo-alto: #0f1c2b;
-    --cielo-bajo: #25384d;
+  to {
+    translate: 100vw 0;
   }
+}
 
-  :root[data-cielo="nieve"] {
-    --cielo-alto: #1c2a38;
-    --cielo-bajo: #3a4b5c;
+@keyframes caer {
+  to {
+    translate: 0 450px;
   }
+}
 
-  :root[data-cielo="tormenta"] {
-    --cielo-alto: #14121f;
-    --cielo-bajo: #2b2740;
+@keyframes destello {
+  0%,
+  91%,
+  100% {
+    opacity: 0;
+  }
+  92% {
+    opacity: 0.14;
+  }
+  93% {
+    opacity: 0.02;
+  }
+  94% {
+    opacity: 0.1;
+  }
+}
+
+/* Quien tiene las animaciones desactivadas en su sistema ve el cielo quieto */
+@media (prefers-reduced-motion: reduce) {
+  .cielo > * {
+    animation: none !important;
   }
 }

@@ -89,6 +89,7 @@ async function obtenerTiempo(ciudad) {
     "weather_code",
     "wind_speed_10m",
     "relative_humidity_2m",
+    "is_day",
   ];
   const datosDiarios = [
     "weather_code",
@@ -180,6 +181,7 @@ function mostrarTiempoActual(ciudad, tiempo) {
   escribir("#actual-viento", numero(actual.wind_speed_10m) + " km/h");
   escribir("#actual-humedad", actual.relative_humidity_2m + " %");
   document.documentElement.dataset.cielo = grupoCielo(actual.weather_code);
+  document.documentElement.dataset.momento = actual.is_day ? "dia" : "noche";
 
   seccionActual.hidden = false;
 }
@@ -320,6 +322,7 @@ formulario.addEventListener("submit", async function (evento) {
   seccionActual.hidden = true;
   seccionPrevision.hidden = true;
   delete document.documentElement.dataset.cielo;
+  delete document.documentElement.dataset.momento;
   mensaje.textContent = "Estamos buscando tu tiempo";
 
   const ciudades = await buscarCiudades(texto);
