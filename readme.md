@@ -1,4 +1,6 @@
-# Tu app del tiempo - https://richiespa-ai.github.io/app-tiempo/
+# Tu app del tiempo
+
+**Demo:** https://richiespa-ai.github.io/app-tiempo/
 
 App para facilitar información del tiempo, tanto actual como los siguientes siete días.
 
@@ -11,58 +13,22 @@ App para facilitar información del tiempo, tanto actual como los siguientes sie
 - Geocoding de Open-Meteo
 - API de Open-Meteo
 - Gitleaks
-
-## Funcionalidades
-
-### Fase 1 (en desarrollo)
-
-- Estado inicial "Busca tu ciudad".
-- Búsqueda de ciudad
-- Lista de coincidencias
-- "Estamos buscando tu tiempo" cuando se inicia la búsqueda.
-- Datos actuales: Temperatura actual, estado de clima (sol, lluvia...), viento, humedad, sensación térmica.
-- Aviso de ubicación no encontrada.
-- Tabla con el clima de los siguientes 7 días, que mostrará por defecto: estado del cielo, Temp Max y Min y probabilidad de lluvia. Dispondrá de botones encima para otras opciones: Viento, Salida y puesta del sol, UV y fase lunar.
-
-### Fase 2 (prevista)
-
-- Se podrán guardar varias localizaciones
-- Dispondrá de ubicación automática
-- Autocompletado del campo de búsqueda
-
-### Fase 3 (prevista)
-
-- (IA o automatización, por decidir)
-
-## Cómo ejecutarla en local
-
-# Tu app del tiempo
-
-App para facilitar información del tiempo, tanto actual como los siguientes siete días.
-
-## Tecnologías
-
-- Vanilla JavaScript
-- Vite
-- HTML
-- CSS
-- Geocoding de Open-Meteo
-- API de Open Meteo
-- Gitleaks
 - GitHub Actions
 - GitHub Pages
+- Fuente Outfit alojada en el proyecto con Fontsource
 
 ## Funcionalidades
 
-### Fase 1
+### Fase 1 (publicada)
 
-- Estado inicial "Busca tu ciudad" y "Estamos buscando tu tiempo" cuando se inicia la búsqueda.
-- Búsqueda de ciudad
-- Lista de coincidencias
-- "Estamos buscando tu tiempo" cuando se inicia la búsqueda.
-- Datos actuales: Temperatura actual, estado de clima (sol, lluvia...), viento, humedad, sensación térmica.
-- Aviso de ubicación no encontrada.
-- Tarjetas con el clima de los siguientes 7 días, que mostrará por defecto: estado del cielo, Temp Max y Min y probabilidad de lluvia. Dispondrá de botones encima para otras opciones: Viento, Salida y puesta del sol, Lluvia, UV y fase lunar.
+- Búsqueda de ciudad por nombre, con lista de coincidencias para elegir.
+- Tiempo actual: temperatura, sensación térmica, estado del cielo, viento y humedad.
+- Previsión de 7 días en tarjetas: estado del cielo, máxima, mínima y probabilidad de lluvia.
+- Botones para mostrar datos opcionales: viento, índice UV con su nivel de riesgo (escala de la OMS), amanecer y atardecer, y fase lunar.
+- Fondo animado que cambia según el tiempo: sol, nubes, niebla, lluvia, nieve y tormenta.
+- Día y noche según la hora local de la ciudad.
+- Modo claro y oscuro según el dispositivo.
+- Avisos claros: búsqueda en curso, ciudad no encontrada y sin conexión.
 
 ### Fase 2 (prevista)
 
@@ -76,8 +42,17 @@ App para facilitar información del tiempo, tanto actual como los siguientes sie
 
 ## Cómo ejecutarla en local
 
-- git clone https://github.com/richiespa-ai/app-tiempo.git
-- cd C:\Users\richi\dev\app-tiempo
-- npm.cmd install
-- npm.cmd run dev
-- Abre http://localhost:5173/ en el navegador
+```
+git clone https://github.com/richiespa-ai/app-tiempo.git
+cd app-tiempo
+npm install
+npm run dev
+```
+
+Abre http://localhost:5173/app-tiempo/ en el navegador.
+
+## Calidad
+
+- HTML validado sin errores ni avisos.
+- Lighthouse en móvil, con accesibilidad 100.
+- Probada en móvil real y con animaciones desactivadas.
