@@ -52,6 +52,18 @@ function grupoCielo(codigo) {
   if (codigo <= 86) return "nieve";
   return "tormenta";
 }
+// Hace una petición y devuelve los datos, o null si algo falla
+async function pedirDatos(url) {
+  try {
+    const respuesta = await fetch(url);
+    if (!respuesta.ok) {
+      return null;
+    }
+    return await respuesta.json();
+  } catch (error) {
+    return null;
+  }
+}
 
 // Busca ciudades por nombre en el geocoding de Open-Meteo
 async function buscarCiudades(texto) {
@@ -59,12 +71,10 @@ async function buscarCiudades(texto) {
     "https://geocoding-api.open-meteo.com/v1/search?count=5&language=es&name=" +
     encodeURIComponent(texto);
 
-  const respuesta = await fetch(url);
-  if (!respuesta.ok) {
+  const datos = await pedirDatos(url);
+  if (datos === null) {
     return null;
   }
-
-  const datos = await respuesta.json();
   if (!datos.results) {
     return [];
   }
@@ -102,17 +112,22 @@ async function obtenerTiempo(ciudad) {
   });
   const url = "https://api.open-meteo.com/v1/forecast?" + parametros;
 
-  const respuesta = await fetch(url);
-  if (!respuesta.ok) {
-    return null;
-  }
-  return await respuesta.json();
+  return await pedirDatos(url);
 }
 
 // Texto de cada opción: "Valencia, Comunidad Valenciana, España"
 function textoCiudad(ciudad) {
   const partes = [ciudad.name, ciudad.admin1, ciudad.country];
   return partes.filter(Boolean).join(", ");
+}
+
+// Muestra un mensaje de error; si no hay conexión, lo dice claramente
+function mostrarError(texto) {
+  if (!navigator.onLine) {
+    mensaje.textContent = "Sin conexión a internet. Inténtalo de nuevo.";
+    return;
+  }
+  mensaje.textContent = texto;
 }
 
 // Escribe un texto dentro del elemento con ese id
@@ -256,7 +271,7 @@ async function elegirCiudad(ciudad) {
 
   const tiempo = await obtenerTiempo(ciudad);
   if (tiempo === null) {
-    mensaje.textContent = "No se pudo obtener el tiempo. Inténtalo de nuevo.";
+    mostrarError("No se pudo obtener el tiempo. Inténtalo de nuevo.");
     return;
   }
 
@@ -293,7 +308,7 @@ formulario.addEventListener("submit", async function (evento) {
   const ciudades = await buscarCiudades(texto);
 
   if (ciudades === null) {
-    mensaje.textContent = "Error en la búsqueda. Inténtalo de nuevo.";
+    mostrarError("Error en la búsqueda. Inténtalo de nuevo.");
     return;
   }
   if (ciudades.length === 0) {
