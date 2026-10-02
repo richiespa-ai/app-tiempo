@@ -1,4 +1,4 @@
-# Tu app del tiempo
+# Tu app del tiempo - https://richiespa-ai.github.io/app-tiempo/
 
 App para facilitar información del tiempo, tanto actual como los siguientes siete días.
 
@@ -49,10 +49,12 @@ App para facilitar información del tiempo, tanto actual como los siguientes sie
 - Geocoding de Open-Meteo
 - API de Open Meteo
 - Gitleaks
+- GitHub Actions
+- GitHub Pages
 
 ## Funcionalidades
 
-### Fase 1 (en desarrollo)
+### Fase 1
 
 - Estado inicial "Busca tu ciudad" y "Estamos buscando tu tiempo" cuando se inicia la búsqueda.
 - Búsqueda de ciudad
@@ -60,7 +62,7 @@ App para facilitar información del tiempo, tanto actual como los siguientes sie
 - "Estamos buscando tu tiempo" cuando se inicia la búsqueda.
 - Datos actuales: Temperatura actual, estado de clima (sol, lluvia...), viento, humedad, sensación térmica.
 - Aviso de ubicación no encontrada.
-- Tabla con el clima de los siguientes 7 días, que mostrará por defecto: estado del cielo, Temp Max y Min y probabilidad de lluvia. Dispondrá de botones encima para otras opciones: Viento, Salida y puesta del sol, Lluvia, UV y fase lunar.
+- Tarjetas con el clima de los siguientes 7 días, que mostrará por defecto: estado del cielo, Temp Max y Min y probabilidad de lluvia. Dispondrá de botones encima para otras opciones: Viento, Salida y puesta del sol, Lluvia, UV y fase lunar.
 
 ### Fase 2 (prevista)
 
