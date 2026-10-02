@@ -1,3 +1,5 @@
+import "@fontsource-variable/outfit";
+
 import "./style.css";
 
 // Elementos de la página que usa el código
