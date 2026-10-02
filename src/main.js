@@ -7,8 +7,7 @@ const mensaje = document.querySelector("#mensaje");
 const listaCoincidencias = document.querySelector("#coincidencias");
 const seccionActual = document.querySelector("#actual");
 const seccionPrevision = document.querySelector("#prevision");
-const filaDias = document.querySelector("#fila-dias");
-const cuerpoPrevision = document.querySelector("#cuerpo-prevision");
+const listaDias = document.querySelector("#lista-dias");
 
 // Traducción de los códigos del tiempo (estándar WMO) a texto
 const estadosCielo = {
@@ -156,12 +155,6 @@ function hora(fechaHora) {
   return fechaHora.slice(11, 16);
 }
 
-// Crea una celda de la tabla (th o td) con su texto
-function crearCelda(etiqueta, texto) {
-  const celda = document.createElement(etiqueta);
-  celda.textContent = texto;
-  return celda;
-}
 // Fase lunar: la API da una fracción de 0 a 1 (0 = nueva, 0,5 = llena)
 const fasesLuna = [
   "🌑 Luna nueva",
@@ -186,62 +179,59 @@ function botonActivo(nombreFila) {
   return boton.getAttribute("aria-pressed") === "true";
 }
 
-// Crea una fila de la tabla: título a la izquierda y un valor por día
-function crearFila(titulo, valores, nombreFila) {
-  const fila = document.createElement("tr");
-  const cabecera = crearCelda("th", titulo);
-  cabecera.scope = "row";
-  fila.append(cabecera);
-
-  for (const valor of valores) {
-    fila.append(crearCelda("td", valor));
-  }
-
-  // Las filas con nombre son las opcionales: se ven si su botón está activo
-  if (nombreFila) {
-    fila.dataset.fila = nombreFila;
-    fila.hidden = !botonActivo(nombreFila);
-  }
-  return fila;
+// Crea un elemento HTML con su texto dentro
+function crearElemento(etiqueta, texto) {
+  const elemento = document.createElement(etiqueta);
+  elemento.textContent = texto;
+  return elemento;
 }
 
-// Rellena la tabla de los próximos 7 días y la muestra
+// Crea un dato de la tarjeta: título y valor
+function crearDato(titulo, valor, nombreFila) {
+  const dato = document.createElement("div");
+  dato.append(crearElemento("dt", titulo), crearElemento("dd", valor));
+
+  // Los datos con nombre son los opcionales: se ven si su botón está activo
+  if (nombreFila) {
+    dato.dataset.fila = nombreFila;
+    dato.hidden = !botonActivo(nombreFila);
+  }
+  return dato;
+}
+
+// Crea la tarjeta de un día. "i" es la posición del día (0 = hoy)
+function crearTarjetaDia(diario, i) {
+  const maxima = Math.round(diario.temperature_2m_max[i]) + " °C";
+  const minima = Math.round(diario.temperature_2m_min[i]) + " °C";
+  const sol = hora(diario.sunrise[i]) + " / " + hora(diario.sunset[i]);
+
+  const datos = document.createElement("dl");
+  datos.append(
+    crearDato("Máxima", maxima),
+    crearDato("Mínima", minima),
+    crearDato("Prob. lluvia", diario.precipitation_probability_max[i] + " %"),
+    crearDato("Viento máx.", diario.wind_speed_10m_max[i] + " km/h", "viento"),
+    crearDato("Índice UV", String(diario.uv_index_max[i]), "uv"),
+    crearDato("Amanecer / atardecer", sol, "sol"),
+    crearDato("Luna", faseLunar(diario.moon_phase[i]), "luna"),
+  );
+
+  const tarjeta = document.createElement("li");
+  tarjeta.append(
+    crearElemento("h3", nombreDia(diario.time[i], i)),
+    crearElemento("p", estadosCielo[diario.weather_code[i]] || "—"),
+    datos,
+  );
+  return tarjeta;
+}
+
+// Crea una tarjeta por cada día y muestra la sección
 function mostrarPrevision(diario) {
-  filaDias.innerHTML = "";
-  cuerpoPrevision.innerHTML = "";
+  listaDias.innerHTML = "";
 
-  // Fila de cabecera: una celda vacía y luego un día por columna
-  filaDias.append(crearCelda("th", ""));
-  diario.time.forEach(function (fecha, posicion) {
-    const celda = crearCelda("th", nombreDia(fecha, posicion));
-    celda.scope = "col";
-    filaDias.append(celda);
+  diario.time.forEach(function (fecha, i) {
+    listaDias.append(crearTarjetaDia(diario, i));
   });
-
-  // Convertimos cada lista de datos en una lista de textos
-  const cielo = diario.weather_code.map(
-    (codigo) => estadosCielo[codigo] || "—",
-  );
-  const maximas = diario.temperature_2m_max.map((t) => Math.round(t) + " °C");
-  const minimas = diario.temperature_2m_min.map((t) => Math.round(t) + " °C");
-  const lluvia = diario.precipitation_probability_max.map((p) => p + " %");
-  const viento = diario.wind_speed_10m_max.map((v) => v + " km/h");
-  const uv = diario.uv_index_max.map((u) => String(u));
-  const sol = diario.sunrise.map(
-    (amanecer, i) => hora(amanecer) + " / " + hora(diario.sunset[i]),
-  );
-  const luna = diario.moon_phase.map(faseLunar);
-
-  cuerpoPrevision.append(
-    crearFila("Cielo", cielo),
-    crearFila("Máxima", maximas),
-    crearFila("Mínima", minimas),
-    crearFila("Prob. lluvia", lluvia),
-    crearFila("Viento máx.", viento, "viento"),
-    crearFila("Índice UV", uv, "uv"),
-    crearFila("Amanecer / atardecer", sol, "sol"),
-    crearFila("Luna", luna, "luna"),
-  );
 
   seccionPrevision.hidden = false;
 }
@@ -270,9 +260,8 @@ for (const boton of botonesExtra) {
     boton.setAttribute("aria-pressed", String(!activo));
 
     const selector = '[data-fila="' + boton.dataset.fila + '"]';
-    const fila = cuerpoPrevision.querySelector(selector);
-    if (fila) {
-      fila.hidden = activo;
+    for (const dato of listaDias.querySelectorAll(selector)) {
+      dato.hidden = activo;
     }
   });
 }
