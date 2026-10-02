@@ -41,6 +41,18 @@ const estadosCielo = {
   99: "Tormenta con granizo fuerte",
 };
 
+// Agrupa los códigos en 6 tipos de cielo, para elegir el color de fondo
+function grupoCielo(codigo) {
+  if (codigo <= 1) return "despejado";
+  if (codigo <= 3) return "nubes";
+  if (codigo <= 48) return "niebla";
+  if (codigo <= 67) return "lluvia";
+  if (codigo <= 77) return "nieve";
+  if (codigo <= 82) return "lluvia";
+  if (codigo <= 86) return "nieve";
+  return "tormenta";
+}
+
 // Busca ciudades por nombre en el geocoding de Open-Meteo
 async function buscarCiudades(texto) {
   const url =
@@ -138,6 +150,7 @@ function mostrarTiempoActual(ciudad, tiempo) {
   escribir("#actual-sensacion", "Sensación " + sensacion + " °C");
   escribir("#actual-viento", actual.wind_speed_10m + " km/h");
   escribir("#actual-humedad", actual.relative_humidity_2m + " %");
+  document.documentElement.dataset.cielo = grupoCielo(actual.weather_code);
 
   seccionActual.hidden = false;
 }
@@ -274,6 +287,7 @@ formulario.addEventListener("submit", async function (evento) {
   listaCoincidencias.innerHTML = "";
   seccionActual.hidden = true;
   seccionPrevision.hidden = true;
+  delete document.documentElement.dataset.cielo;
   mensaje.textContent = "Estamos buscando tu tiempo";
 
   const ciudades = await buscarCiudades(texto);
