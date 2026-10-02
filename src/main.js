@@ -129,6 +129,20 @@ function mostrarError(texto) {
   }
   mensaje.textContent = texto;
 }
+// Escribe un número como en español: 10.2 → "10,2"
+function numero(valor) {
+  return valor.toLocaleString("es-ES");
+}
+
+// Nivel de riesgo del índice UV, según la escala de la OMS
+function nivelUV(valor) {
+  const indice = Math.round(valor);
+  if (indice <= 2) return "Bajo";
+  if (indice <= 5) return "Moderado";
+  if (indice <= 7) return "Alto";
+  if (indice <= 10) return "Muy alto";
+  return "Extremo";
+}
 
 // Escribe un texto dentro del elemento con ese id
 function escribir(id, texto) {
@@ -163,7 +177,7 @@ function mostrarTiempoActual(ciudad, tiempo) {
   escribir("#actual-cielo", estadosCielo[actual.weather_code] || "Sin datos");
   escribir("#actual-temperatura", temperatura + " °C");
   escribir("#actual-sensacion", "Sensación " + sensacion + " °C");
-  escribir("#actual-viento", actual.wind_speed_10m + " km/h");
+  escribir("#actual-viento", numero(actual.wind_speed_10m) + " km/h");
   escribir("#actual-humedad", actual.relative_humidity_2m + " %");
   document.documentElement.dataset.cielo = grupoCielo(actual.weather_code);
 
@@ -232,14 +246,17 @@ function crearTarjetaDia(diario, i) {
   const maxima = Math.round(diario.temperature_2m_max[i]) + " °C";
   const minima = Math.round(diario.temperature_2m_min[i]) + " °C";
   const sol = hora(diario.sunrise[i]) + " / " + hora(diario.sunset[i]);
+  const viento = numero(diario.wind_speed_10m_max[i]) + " km/h";
+  const valorUV = diario.uv_index_max[i];
+  const uv = numero(valorUV) + " (" + nivelUV(valorUV) + ")";
 
   const datos = document.createElement("dl");
   datos.append(
     crearDato("Máxima", maxima),
     crearDato("Mínima", minima),
     crearDato("Prob. lluvia", diario.precipitation_probability_max[i] + " %"),
-    crearDato("Viento máx.", diario.wind_speed_10m_max[i] + " km/h", "viento"),
-    crearDato("Índice UV", String(diario.uv_index_max[i]), "uv"),
+    crearDato("Viento máx.", viento, "viento"),
+    crearDato("Índice UV", uv, "uv"),
     crearDato("Amanecer / atardecer", sol, "sol"),
     crearDato("Luna", faseLunar(diario.moon_phase[i]), "luna"),
   );
