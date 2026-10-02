@@ -64,7 +64,7 @@ main {
   padding-bottom: 4rem;
 }
 
-section {
+main > * {
   margin-top: 2rem;
 }
 
