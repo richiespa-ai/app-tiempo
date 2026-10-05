@@ -19,6 +19,10 @@ const botonUbicacion = document.querySelector("#boton-ubicacion");
 const MAXIMO_GUARDADAS = 6;
 let ciudadActual = null;
 
+// Autocompletado: temporizador de espera y número de la última búsqueda
+let temporizador = null;
+let numeroBusqueda = 0;
+
 // Traducción de los códigos del tiempo (estándar WMO) a texto
 const estadosCielo = {
   0: "Despejado",
@@ -365,6 +369,7 @@ function mostrarPrevision(diario) {
 
 // Qué pasa al elegir una ciudad de la lista
 async function elegirCiudad(ciudad) {
+  cancelarSugerencias();
   listaCoincidencias.innerHTML = "";
   mensaje.textContent = "Estamos buscando tu tiempo";
 
@@ -421,6 +426,7 @@ for (const boton of botonesExtra) {
 // Qué pasa cuando el usuario pulsa "Buscar" (o Enter)
 formulario.addEventListener("submit", async function (evento) {
   evento.preventDefault();
+  cancelarSugerencias();
 
   const texto = campoCiudad.value.trim();
   listaCoincidencias.innerHTML = "";
@@ -443,6 +449,35 @@ formulario.addEventListener("submit", async function (evento) {
 
   mensaje.textContent = "";
   mostrarCoincidencias(ciudades);
+});
+
+// Anula las sugerencias pendientes: las que esperan y las que están en camino
+function cancelarSugerencias() {
+  clearTimeout(temporizador);
+  numeroBusqueda = numeroBusqueda + 1;
+}
+
+// Autocompletado: sugiere ciudades mientras el usuario escribe
+campoCiudad.addEventListener("input", function () {
+  cancelarSugerencias();
+  const texto = campoCiudad.value.trim();
+
+  if (texto.length < 3) {
+    listaCoincidencias.innerHTML = "";
+    return;
+  }
+
+  // Espera a que deje de teclear (0,3 s) antes de preguntar a la API
+  temporizador = setTimeout(async function () {
+    const estaBusqueda = numeroBusqueda;
+    const ciudades = await buscarCiudades(texto);
+
+    // Si mientras tanto se ha escrito o elegido otra cosa, ya no vale
+    if (estaBusqueda !== numeroBusqueda) {
+      return;
+    }
+    mostrarCoincidencias(ciudades || []);
+  }, 300);
 });
 
 // Botón "Usar mi ubicación": pide permiso al navegador y carga ese tiempo
