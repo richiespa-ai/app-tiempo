@@ -30,11 +30,17 @@ App para facilitar información del tiempo, tanto actual como los siguientes sie
 - Modo claro y oscuro según el dispositivo.
 - Avisos claros: búsqueda en curso, ciudad no encontrada y sin conexión.
 
-### Fase 2 (prevista)
+### Fase 2 (en curso)
 
-- Se podrán guardar varias localizaciones
-- Dispondrá de ubicación automática
-- Autocompletado del campo de búsqueda
+Publicado:
+
+- Recuerda la última ciudad consultada y la carga al abrir la app.
+- "Mis ciudades": guardar hasta 6 ciudades favoritas y cambiar entre ellas con un clic. Se guardan en el propio navegador (localStorage), sin cuentas ni servidor.
+
+Previsto:
+
+- Ubicación automática.
+- Autocompletado del campo de búsqueda.
 
 ### Fase 3 (prevista)
 
