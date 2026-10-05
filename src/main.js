@@ -13,6 +13,7 @@ const listaDias = document.querySelector("#lista-dias");
 const seccionGuardadas = document.querySelector("#guardadas");
 const listaGuardadas = document.querySelector("#lista-guardadas");
 const botonGuardar = document.querySelector("#boton-guardar");
+const botonUbicacion = document.querySelector("#boton-ubicacion");
 
 // Ciudades guardadas: cuántas caben y cuál se está viendo ahora
 const MAXIMO_GUARDADAS = 6;
@@ -188,6 +189,8 @@ function mostrarGuardadas() {
 
   seccionGuardadas.hidden = guardadas.length === 0;
   if (ciudadActual) {
+    // "Tu ubicación" no tiene id: no es una ciudad fija y no se puede guardar
+    botonGuardar.hidden = !ciudadActual.id;
     const guardada = estaGuardada(ciudadActual);
     botonGuardar.textContent = guardada ? "Quitar ciudad" : "Guardar ciudad";
   }
@@ -375,7 +378,9 @@ async function elegirCiudad(ciudad) {
   mostrarTiempoActual(ciudad, tiempo);
   mostrarPrevision(tiempo.daily);
   ciudadActual = resumenCiudad(ciudad);
-  guardarMemoria("ultima-ciudad", ciudadActual);
+  if (ciudadActual.id) {
+    guardarMemoria("ultima-ciudad", ciudadActual);
+  }
   mostrarGuardadas();
 }
 
@@ -438,6 +443,31 @@ formulario.addEventListener("submit", async function (evento) {
 
   mensaje.textContent = "";
   mostrarCoincidencias(ciudades);
+});
+
+// Botón "Usar mi ubicación": pide permiso al navegador y carga ese tiempo
+botonUbicacion.addEventListener("click", function () {
+  if (!navigator.geolocation) {
+    mensaje.textContent = "Tu navegador no permite obtener la ubicación.";
+    return;
+  }
+
+  mensaje.textContent = "Buscando tu ubicación";
+
+  navigator.geolocation.getCurrentPosition(
+    function (posicion) {
+      elegirCiudad({
+        name: "Tu ubicación",
+        latitude: Math.round(posicion.coords.latitude * 100) / 100,
+        longitude: Math.round(posicion.coords.longitude * 100) / 100,
+      });
+    },
+    function () {
+      mensaje.textContent =
+        "No se pudo obtener tu ubicación. Busca tu ciudad por su nombre.";
+    },
+    { timeout: 10000 },
+  );
 });
 
 // Al abrir la app, muestra las ciudades guardadas y carga la última consultada
