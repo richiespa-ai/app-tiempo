@@ -55,5 +55,5 @@ Abre http://localhost:5173/app-tiempo/ en el navegador.
 ## Calidad
 
 - HTML validado sin errores ni avisos.
-- Lighthouse en móvil, con accesibilidad 100.
+- Lighthouse en móvil (primera visita, en incógnito): 100 en rendimiento, accesibilidad, buenas prácticas y SEO (octubre de 2026).
 - Probada en móvil real y con animaciones desactivadas.
