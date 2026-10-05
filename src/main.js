@@ -117,6 +117,35 @@ async function obtenerTiempo(ciudad) {
 
   return await pedirDatos(url);
 }
+// Guarda un dato en la memoria del navegador (localStorage)
+function guardarMemoria(clave, valor) {
+  try {
+    localStorage.setItem(clave, JSON.stringify(valor));
+  } catch (error) {
+    // Si el navegador no deja guardar, la app sigue funcionando
+  }
+}
+
+// Lee un dato de la memoria del navegador; null si no existe
+function leerMemoria(clave) {
+  try {
+    return JSON.parse(localStorage.getItem(clave));
+  } catch (error) {
+    return null;
+  }
+}
+
+// De toda la información de una ciudad, lo que necesitamos recordar
+function resumenCiudad(ciudad) {
+  return {
+    id: ciudad.id,
+    name: ciudad.name,
+    admin1: ciudad.admin1,
+    country: ciudad.country,
+    latitude: ciudad.latitude,
+    longitude: ciudad.longitude,
+  };
+}
 
 // Texto de cada opción: "Valencia, Comunidad Valenciana, España"
 function textoCiudad(ciudad) {
@@ -299,6 +328,7 @@ async function elegirCiudad(ciudad) {
   mensaje.textContent = "";
   mostrarTiempoActual(ciudad, tiempo);
   mostrarPrevision(tiempo.daily);
+  guardarMemoria("ultima-ciudad", resumenCiudad(ciudad));
 }
 // Botones de filas opcionales: cada clic muestra u oculta su fila
 const botonesExtra = document.querySelectorAll("#botones-extra button");
@@ -341,3 +371,9 @@ formulario.addEventListener("submit", async function (evento) {
   mensaje.textContent = "";
   mostrarCoincidencias(ciudades);
 });
+
+// Al abrir la app, carga la última ciudad consultada
+const ultimaCiudad = leerMemoria("ultima-ciudad");
+if (ultimaCiudad) {
+  elegirCiudad(ultimaCiudad);
+}
