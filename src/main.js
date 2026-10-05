@@ -10,6 +10,13 @@ const listaCoincidencias = document.querySelector("#coincidencias");
 const seccionActual = document.querySelector("#actual");
 const seccionPrevision = document.querySelector("#prevision");
 const listaDias = document.querySelector("#lista-dias");
+const seccionGuardadas = document.querySelector("#guardadas");
+const listaGuardadas = document.querySelector("#lista-guardadas");
+const botonGuardar = document.querySelector("#boton-guardar");
+
+// Ciudades guardadas: cuántas caben y cuál se está viendo ahora
+const MAXIMO_GUARDADAS = 6;
+let ciudadActual = null;
 
 // Traducción de los códigos del tiempo (estándar WMO) a texto
 const estadosCielo = {
@@ -145,6 +152,45 @@ function resumenCiudad(ciudad) {
     latitude: ciudad.latitude,
     longitude: ciudad.longitude,
   };
+}
+
+// Lista de ciudades guardadas (vacía si aún no hay ninguna)
+function leerGuardadas() {
+  return leerMemoria("ciudades-guardadas") || [];
+}
+
+// ¿Está esta ciudad en la lista de guardadas?
+function estaGuardada(ciudad) {
+  return leerGuardadas().some((c) => c.id === ciudad.id);
+}
+
+// Pinta "Mis ciudades" y pone el botón en Guardar o Quitar
+function mostrarGuardadas() {
+  const guardadas = leerGuardadas();
+  listaGuardadas.innerHTML = "";
+
+  for (const ciudad of guardadas) {
+    const boton = document.createElement("button");
+    boton.type = "button";
+    boton.textContent = ciudad.name;
+    boton.title = textoCiudad(ciudad);
+    if (ciudadActual && ciudad.id === ciudadActual.id) {
+      boton.setAttribute("aria-current", "true");
+    }
+    boton.addEventListener("click", function () {
+      elegirCiudad(ciudad);
+    });
+
+    const elemento = document.createElement("li");
+    elemento.append(boton);
+    listaGuardadas.append(elemento);
+  }
+
+  seccionGuardadas.hidden = guardadas.length === 0;
+  if (ciudadActual) {
+    const guardada = estaGuardada(ciudadActual);
+    botonGuardar.textContent = guardada ? "Quitar ciudad" : "Guardar ciudad";
+  }
 }
 
 // Texto de cada opción: "Valencia, Comunidad Valenciana, España"
@@ -328,8 +374,30 @@ async function elegirCiudad(ciudad) {
   mensaje.textContent = "";
   mostrarTiempoActual(ciudad, tiempo);
   mostrarPrevision(tiempo.daily);
-  guardarMemoria("ultima-ciudad", resumenCiudad(ciudad));
+  ciudadActual = resumenCiudad(ciudad);
+  guardarMemoria("ultima-ciudad", ciudadActual);
+  mostrarGuardadas();
 }
+
+// Botón Guardar / Quitar: añade o quita la ciudad actual de "Mis ciudades"
+botonGuardar.addEventListener("click", function () {
+  const guardadas = leerGuardadas();
+
+  if (estaGuardada(ciudadActual)) {
+    const resto = guardadas.filter((c) => c.id !== ciudadActual.id);
+    guardarMemoria("ciudades-guardadas", resto);
+  } else if (guardadas.length >= MAXIMO_GUARDADAS) {
+    mensaje.textContent =
+      "Ya tienes 6 ciudades guardadas. Quita una para añadir otra.";
+    return;
+  } else {
+    guardadas.push(ciudadActual);
+    guardarMemoria("ciudades-guardadas", guardadas);
+  }
+
+  mostrarGuardadas();
+});
+
 // Botones de filas opcionales: cada clic muestra u oculta su fila
 const botonesExtra = document.querySelectorAll("#botones-extra button");
 
@@ -372,7 +440,8 @@ formulario.addEventListener("submit", async function (evento) {
   mostrarCoincidencias(ciudades);
 });
 
-// Al abrir la app, carga la última ciudad consultada
+// Al abrir la app, muestra las ciudades guardadas y carga la última consultada
+mostrarGuardadas();
 const ultimaCiudad = leerMemoria("ultima-ciudad");
 if (ultimaCiudad) {
   elegirCiudad(ultimaCiudad);

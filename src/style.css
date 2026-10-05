@@ -547,3 +547,39 @@ dd {
     animation: none !important;
   }
 }
+
+/* ===== 9. Mis ciudades guardadas ===== */
+#guardadas {
+  margin-top: 1.5rem;
+}
+
+#guardadas h2 {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--tinta-suave);
+}
+
+#lista-guardadas {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+}
+
+#lista-guardadas button,
+#boton-guardar {
+  padding: 0.4rem 0.9rem;
+  font-size: 0.9375rem;
+  border-radius: 999px;
+}
+
+/* La ciudad que se está viendo ahora: colores invertidos */
+#lista-guardadas button[aria-current="true"] {
+  color: var(--cielo-bajo);
+  background: var(--tinta);
+  border-color: transparent;
+}
+
+#boton-guardar {
+  margin: 0.5rem 0 0.75rem;
+}
